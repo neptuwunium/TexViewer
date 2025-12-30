@@ -17,7 +17,7 @@ MainWindow::setupUi(QMainWindow* mainWindow)
 
     mainWindow->setWindowTitle(mainWindow->windowTitle() + " " + TEXVIEWER_VERSION_STR);
 
-    ClampedSpinbox* newSpinbox = new ClampedSpinbox({2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384});
+    Pow2Spinbox* newSpinbox = new Pow2Spinbox();
     this->WidthInput->hide();
     this->ResolutionLayout->replaceWidget(this->WidthInput, newSpinbox);
     this->WidthInput = newSpinbox;
@@ -45,7 +45,7 @@ MainWindow::setupUi(QMainWindow* mainWindow)
     connect(&this->m_viewer, &ImageViewer::errorMessage, this->statusbar, &QStatusBar::showMessage);
 
     this->WidthInput->setMaximum(16384);
-    this->WidthInput->setMinimum(1);
+    this->WidthInput->setMinimum(4);
     this->WidthInput->setValue(1024);
     m_viewer.setWidth(1024);
 
@@ -141,11 +141,13 @@ MainWindow::formatTabChanged(int index)
     if (index == 0)
     {
         m_viewer.setIsCompressed(true);
+        this->WidthInput->setMinimum(4);
     }
     else
     {
         setUncompressedLayout();
         m_viewer.setIsCompressed(false);
+        this->WidthInput->setMinimum(1);
     }
 }
 
