@@ -12,6 +12,8 @@ convertUncompressedImage(const UncompressedLayout& layout, const char* rawData, 
         case(UncompressedFormat::FLOAT):
             return _convertUncompressedImage(layout, rawData, rawDataSize, {0, 0, 0, 0}, &readFloat);
     }
+
+    return std::vector<uint8_t>();
 }
 
 std::vector<uint8_t> _convertUncompressedImage(
@@ -74,7 +76,7 @@ std::vector<int>
 generateMaxUNorm(const std::vector<int>& bits)
 {
     std::vector<int> curBitMax(4);
-    for (int x = 0; x < 4; x++)
+    for (int x = 0; x < std::min(static_cast<int>(bits.size()), 4); x++)
         curBitMax[x] = std::pow(2, bits[x]) - 1;
     return curBitMax;
 }
@@ -83,7 +85,7 @@ std::vector<int>
 generateMaxSNorm(const std::vector<int>& bits)
 {
     std::vector<int> curBitMax(4);
-    for (int x = 0; x < 4; x++)
+    for (int x = 0; x < std::min(static_cast<int>(bits.size()), 4); x++)
         curBitMax[x] = std::pow(2, bits[x] - 1);
     return curBitMax;
 }

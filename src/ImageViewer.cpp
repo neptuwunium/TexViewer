@@ -44,11 +44,10 @@ ImageViewer::setImageData(char* data, size_t size)
 void
 ImageViewer::setWidth(int width)
 {
-    if ((width & (width - 1)) != 0)
+    if (m_isCompressed && (width % 4) > 0)
     {
-        emit errorMessage("Width is not power of 2");
-        QPixmap pixmap;
-        m_labelViewer->setPixmap(pixmap);
+        if (width > 4)
+            emit errorMessage(QString("Width %1 is not multiple of 4").arg(width));
         return;
     }
     m_width = width;
@@ -107,6 +106,8 @@ ImageViewer::loadQImageCompressed()
     int decompressedLen = getDecompressedSize(data.blockSizeSrc, data.pixelSizeDst, m_width, rawDataSize);
     std::vector<char> decompressed(decompressedLen);
     int height = convertBlocksSafe(rawData, rawDataSize, decompressed.data(), m_width, data.blockSizeSrc, data.pixelSizeDst, data.decode);
+    if (height == 0)
+        return;
     QImage image((unsigned char*)decompressed.data(), m_width, height, data.qFormat);
     QPixmap pixmap = QPixmap::fromImage(image);
     m_labelViewer->setPixmap(pixmap);
@@ -116,6 +117,10 @@ void
 ImageViewer::loadQImageUncompressed()
 {
     std::vector<uint8_t> formattedData = convertUncompressedImage(m_uncompressedLayout, m_rawData + m_rawDataOffset, m_rawDataSize - m_rawDataOffset);
+
+    if (formattedData.empty())
+        return;
+
     size_t height = formattedData.size() / 4 / m_width;
 
     QImage image((unsigned char*)formattedData.data(), m_width, height, QImage::Format_RGBA8888);

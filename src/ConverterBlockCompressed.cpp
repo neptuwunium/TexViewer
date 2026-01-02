@@ -61,6 +61,9 @@ getDecompressedSize(int srcBlockSize, int dstPixelSize, int width, int dataSize)
 int
 convertBlocksSafe(const char* inData, size_t inDataLen, char* decompressed, int width, int srcBlockSize, int dstPixelSize, decodeFunc decodeFunc)
 {
+    if (inData == nullptr || decompressed == nullptr)
+        return 0;
+
     const char* src = inData;
     char* dst;
 
