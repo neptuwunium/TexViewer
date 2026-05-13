@@ -38,6 +38,7 @@ public slots:
     void offsetComboChanged(int index);
     void offsetInputChanged(int value);
     void widthChanged(int value);
+    void heightChanged(int value);
 
     // Uncompressed widgets
     void channel0ComboChanged(int index);

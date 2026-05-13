@@ -15,7 +15,8 @@ void
 ImageViewer::setWidget(QScrollArea* imagePreviewLayout)
 {
     m_labelViewer = new QLabel();
-    
+    m_labelViewer->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+
     m_scrollArea = imagePreviewLayout;
     m_scrollArea->setBackgroundRole(QPalette::Dark);
     m_scrollArea->setWidget(m_labelViewer);
@@ -51,6 +52,13 @@ ImageViewer::setWidth(int width)
         return;
     }
     m_width = width;
+    loadQImage();
+}
+
+void
+ImageViewer::setHeight(int height)
+{
+    m_height = height;
     loadQImage();
 }
 
@@ -108,6 +116,8 @@ ImageViewer::loadQImageCompressed()
     int height = convertBlocksSafe(rawData, rawDataSize, decompressed.data(), m_width, data.blockSizeSrc, data.pixelSizeDst, data.decode);
     if (height == 0)
         return;
+    if (height > m_height && m_height > 0)
+        height = m_height;
     QImage image((unsigned char*)decompressed.data(), m_width, height, data.qFormat);
     QPixmap pixmap = QPixmap::fromImage(image);
     m_labelViewer->setPixmap(pixmap);
@@ -122,6 +132,8 @@ ImageViewer::loadQImageUncompressed()
         return;
 
     size_t height = formattedData.size() / 4 / m_width;
+    if (height > m_height && m_height > 0)
+        height = m_height;
 
     QImage image((unsigned char*)formattedData.data(), m_width, height, QImage::Format_RGBA8888);
     QPixmap pixmap = QPixmap::fromImage(image);

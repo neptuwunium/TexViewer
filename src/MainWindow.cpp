@@ -17,10 +17,15 @@ MainWindow::setupUi(QMainWindow* mainWindow)
 
     mainWindow->setWindowTitle(mainWindow->windowTitle() + " " + TEXVIEWER_VERSION_STR);
 
-    Pow2Spinbox* newSpinbox = new Pow2Spinbox();
+    Pow2Spinbox* newWidthSpinbox = new Pow2Spinbox();
     this->WidthInput->hide();
-    this->ResolutionLayout->replaceWidget(this->WidthInput, newSpinbox);
-    this->WidthInput = newSpinbox;
+    this->XResolutionLayout->replaceWidget(this->WidthInput, newWidthSpinbox);
+    this->WidthInput = newWidthSpinbox;
+
+    Pow2Spinbox* newHeightSpinbox = new Pow2Spinbox();
+    this->HeightInput->hide();
+    this->YResolutionLayout->replaceWidget(this->HeightInput, newHeightSpinbox);
+    this->HeightInput = newHeightSpinbox;
 
     connect(this->FormatOptionsGroup, &QTabWidget::currentChanged, this, &MainWindow::formatTabChanged);
     connect(this->actionOpen, &QAction::triggered, this, &MainWindow::fileOpenTriggered);
@@ -29,6 +34,7 @@ MainWindow::setupUi(QMainWindow* mainWindow)
     connect(this->OffsetCombo, &QComboBox::currentIndexChanged, this, &MainWindow::offsetComboChanged);
     connect(this->OffsetInput, &QSpinBox::valueChanged, this, &MainWindow::offsetInputChanged);
     connect(this->WidthInput, &QSpinBox::valueChanged, this, &MainWindow::widthChanged);
+    connect(this->HeightInput, &QSpinBox::valueChanged, this, &MainWindow::heightChanged);
 
     connect(this->UncompressedFormatCombo, &QComboBox::currentIndexChanged, this, &MainWindow::uncompressedFormatComboChanged);
 
@@ -48,6 +54,11 @@ MainWindow::setupUi(QMainWindow* mainWindow)
     this->WidthInput->setMinimum(4);
     this->WidthInput->setValue(1024);
     m_viewer.setWidth(1024);
+
+    this->HeightInput->setMaximum(16384);
+    this->HeightInput->setMinimum(0);
+    this->HeightInput->setValue(0);
+    m_viewer.setHeight(0);
 
     this->OffsetInput->setRange(0, 100000);
     this->OffsetInput->setValue(0);
@@ -214,6 +225,12 @@ void
 MainWindow::widthChanged(int value)
 {
     m_viewer.setWidth(value);
+}
+
+void
+MainWindow::heightChanged(int value)
+{
+    m_viewer.setHeight(value);
 }
 
 void

@@ -21,6 +21,7 @@ class ImageViewer : public QObject
     size_t m_rawDataSize;
     size_t m_rawDataOffset;
     int m_width;
+    int m_height;
     ImageFormat m_format;
     UncompressedLayout m_uncompressedLayout;
     QPixmap m_pixmap;
@@ -37,6 +38,7 @@ public:
     void setIsCompressed(bool isCompressed);
     void setImageData(char* data, size_t size);
     void setWidth(int width);
+    void setHeight(int height);
     void setFormat(ImageFormat format);
     void setOffset(size_t dataOffset);
     void setUncompressedStruct(UncompressedLayout layout);
