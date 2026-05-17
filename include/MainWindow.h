@@ -18,6 +18,7 @@ class MainWindow : public QObject, private Ui_MainWindow
 
     QFileDialog m_dialog;
     ImageViewer m_viewer;
+    QMainWindow* m_mainWindow;
     std::vector<std::pair<QComboBox*, QSpinBox*>> m_uncompressedOptions;
 
 public:

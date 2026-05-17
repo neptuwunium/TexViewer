@@ -12,6 +12,7 @@ MainWindow::MainWindow()
 void
 MainWindow::setupUi(QMainWindow* mainWindow)
 {
+    m_mainWindow = mainWindow;
     Ui_MainWindow::setupUi(mainWindow);
     m_viewer.setWidget(this->ImagePreviewArea);
 
@@ -183,6 +184,8 @@ MainWindow::fileSelected(const QString& file)
     fileHandle.read(rawData, fileLen);
 
     m_viewer.setImageData(rawData, fileLen);
+
+    m_mainWindow->setWindowTitle(QString::fromStdString(std::string("TexViewer ") + TEXVIEWER_VERSION_STR + " - " + filePathStr));
 }
 
 void
