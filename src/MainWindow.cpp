@@ -93,12 +93,11 @@ MainWindow::setupUi(QMainWindow* mainWindow)
     #endif
     #ifdef TEXVIEWER_ETC
     this->FormatCombo->addItem("ETC", ImageFormat::ETC1);
-    this->FormatCombo->addItem("EAC1U", ImageFormat::EAC1U);
-    this->FormatCombo->addItem("EAC1S", ImageFormat::EAC1S);
-    this->FormatCombo->addItem("EAC2U", ImageFormat::EAC2U);
-    this->FormatCombo->addItem("EAC2S", ImageFormat::EAC2S);
     this->FormatCombo->addItem("ETC2", ImageFormat::ETC2);
-    this->FormatCombo->addItem("ETC2A", ImageFormat::ETC2A);
+    this->FormatCombo->addItem("ETC2A1", ImageFormat::ETC2A1);
+    this->FormatCombo->addItem("ETC2A8", ImageFormat::ETC2A8);
+    this->FormatCombo->addItem("EAC1", ImageFormat::EAC1);
+    this->FormatCombo->addItem("EAC2", ImageFormat::EAC2);
     #endif
 
     std::vector<QComboBox*> combos = {

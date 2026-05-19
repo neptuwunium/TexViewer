@@ -119,11 +119,13 @@ ImageViewer::loadQImageCompressed()
         height = m_height;
     const int decompressedLen = m_width * height * info.pitch;
     std::vector<char> decompressed(decompressedLen);
-    int resultHeight = info.decode(rawData, rawDataSize, decompressed.data(), decompressedLen, m_width, m_height, info);
+    int resultHeight = info.decode(rawData, rawDataSize, decompressed.data(), decompressedLen, m_width, height, info);
     if (resultHeight == 0)
         return;
     if (resultHeight > height)
         resultHeight = height;
+    if (resultHeight * m_width * info.pitch > decompressedLen)
+        return;
     const QImage image(reinterpret_cast<unsigned char *>(decompressed.data()), m_width, resultHeight, info.qFormat);
     const QPixmap pixmap = QPixmap::fromImage(image);
     m_labelViewer->setPixmap(pixmap);

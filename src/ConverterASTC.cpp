@@ -10,7 +10,7 @@ int convertAstc(char* inData, size_t inDataLen, char* outData, size_t outDataLen
     int estHeight = static_cast<int>(outDataLen) / width / info.pitch;
 
     if (height == 0 || estHeight < height)
-        height = estHeight - info.blockHeight;
+        height = estHeight;
 
     astcenc_config config {};
     astcenc_error status = astcenc_config_init(
