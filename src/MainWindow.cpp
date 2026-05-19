@@ -65,6 +65,7 @@ MainWindow::setupUi(QMainWindow* mainWindow)
     this->OffsetInput->setValue(0);
     this->m_viewer.setOffset(0);
     
+    #ifdef TEXVIEWER_BPTC
     this->FormatCombo->addItem("BC1", ImageFormat::BC1);
     this->FormatCombo->addItem("BC2", ImageFormat::BC2);
     this->FormatCombo->addItem("BC3", ImageFormat::BC3);
@@ -73,8 +74,32 @@ MainWindow::setupUi(QMainWindow* mainWindow)
     this->FormatCombo->addItem("BC6HU", ImageFormat::BC6HU);
     this->FormatCombo->addItem("BC6HS", ImageFormat::BC6HS);
     this->FormatCombo->addItem("BC7", ImageFormat::BC7);
-    this->FormatCombo->setCurrentIndex(0);
-    m_viewer.setFormat(ImageFormat::BC1);
+    #endif
+    #ifdef TEXVIEWER_ASTC
+    this->FormatCombo->addItem("ASTC_4x4", ImageFormat::ASTC4x4);
+    this->FormatCombo->addItem("ASTC_5x4", ImageFormat::ASTC5x4);
+    this->FormatCombo->addItem("ASTC_5x5", ImageFormat::ASTC5x5);
+    this->FormatCombo->addItem("ASTC_6x5", ImageFormat::ASTC6x5);
+    this->FormatCombo->addItem("ASTC_6x6", ImageFormat::ASTC6x6);
+    this->FormatCombo->addItem("ASTC_8x5", ImageFormat::ASTC8x8);
+    this->FormatCombo->addItem("ASTC_8x6", ImageFormat::ASTC8x6);
+    this->FormatCombo->addItem("ASTC_8x8", ImageFormat::ASTC8x8);
+    this->FormatCombo->addItem("ASTC_10x5", ImageFormat::ASTC10x5);
+    this->FormatCombo->addItem("ASTC_10x6", ImageFormat::ASTC10x6);
+    this->FormatCombo->addItem("ASTC_10x8", ImageFormat::ASTC10x8);
+    this->FormatCombo->addItem("ASTC_10x10", ImageFormat::ASTC10x10);
+    this->FormatCombo->addItem("ASTC_12x10", ImageFormat::ASTC12x10);
+    this->FormatCombo->addItem("ASTC_12x12", ImageFormat::ASTC12x12);
+    #endif
+    #ifdef TEXVIEWER_ETC
+    this->FormatCombo->addItem("ETC", ImageFormat::ETC1);
+    this->FormatCombo->addItem("EAC1U", ImageFormat::EAC1U);
+    this->FormatCombo->addItem("EAC1S", ImageFormat::EAC1S);
+    this->FormatCombo->addItem("EAC2U", ImageFormat::EAC2U);
+    this->FormatCombo->addItem("EAC2S", ImageFormat::EAC2S);
+    this->FormatCombo->addItem("ETC2", ImageFormat::ETC2);
+    this->FormatCombo->addItem("ETC2A", ImageFormat::ETC2A);
+    #endif
 
     std::vector<QComboBox*> combos = {
         this->Channel1Combo,
@@ -82,9 +107,10 @@ MainWindow::setupUi(QMainWindow* mainWindow)
         this->Channel3Combo,
         this->Channel4Combo
     };
+
     for (QComboBox* x : combos)
     {
-        x->addItem("-", ColorChannel::PADDING);
+        x->addItem("X", ColorChannel::PADDING);
         x->addItem("R", ColorChannel::RED);
         x->addItem("G", ColorChannel::GREEN);
         x->addItem("B", ColorChannel::BLUE);
@@ -113,11 +139,30 @@ MainWindow::setupUi(QMainWindow* mainWindow)
     m_uncompressedOptions.push_back({this->Channel3Combo, this->Channel3Spin});
     m_uncompressedOptions.push_back({this->Channel4Combo, this->Channel4Spin});
 
+    m_viewer.setIsCompressed(true);
+    #ifdef TEXVIEWER_BPTC
+    this->FormatCombo->setCurrentIndex(0);
+    m_viewer.setFormat(ImageFormat::BC1);
+    #elif defined(TEXVIEWER_ASTC)
+    this->FormatCombo->setCurrentIndex(0);
+    m_viewer.setFormat(ImageFormat::ASTC4x4);
+    #elif defined(TEXVIEWER_ETC)
+    this->FormatCombo->setCurrentIndex(0);
+    m_viewer.setFormat(ImageFormat::ETC1);
+    #else
+    this->FormatOptionsGroup->setTabEnabled(0, false);
+    this->FormatOptionsGroup->setCurrentIndex(1);
+    setUncompressedLayout();
+    m_viewer.setIsCompressed(false);
+    this->WidthInput->setMinimum(1);
+    #endif
+
     this->OffsetInput->hide();
-    this->OffsetCombo->addItem("None");
-    this->OffsetCombo->addItem("DDS Header");
-    this->OffsetCombo->addItem("DDS+DX10 Header");
-    this->OffsetCombo->addItem("Custom");
+    this->OffsetCombo->addItem("None", 0);
+    this->OffsetCombo->addItem("DDS Header", 0x80);
+    this->OffsetCombo->addItem("DDS+DX10 Header", 0x80);
+    this->OffsetCombo->addItem("KTX1 Header", 0x44); // sizeof(KTX1Header) + 0 comment length + 4 bytes
+    this->OffsetCombo->addItem("Custom", -1);
 }
 
 void
@@ -191,30 +236,19 @@ MainWindow::fileSelected(const QString& file)
 void
 MainWindow::compressedFormatComboChanged(int index)
 {
-    ImageFormat format = qvariant_cast<ImageFormat>(this->FormatCombo->itemData(index));
+    const auto format = qvariant_cast<ImageFormat>(this->FormatCombo->itemData(index));
     m_viewer.setFormat(format);
 }
 
 void
 MainWindow::offsetComboChanged(int index)
 {
-    switch(index)
-    {
-    case(0):
-        this->OffsetInput->hide();
-        this->OffsetInput->setValue(0);
-        break;
-    case(1):
-        this->OffsetInput->hide();
-        this->OffsetInput->setValue(128);
-        break;
-    case(2):
-        this->OffsetInput->hide();
-        this->OffsetInput->setValue(148);
-        break;
-    case(3):
+    const auto value = qvariant_cast<int>(this->OffsetCombo->itemData(index));
+    if (value < 0) {
         this->OffsetInput->show();
-        break;
+    } else {
+        this->OffsetInput->hide();
+        this->OffsetInput->setValue(value);
     }
 }
 

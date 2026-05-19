@@ -34,6 +34,9 @@ std::vector<uint8_t> _convertUncompressedImage(
         srcBitStride += curBits;
     }
 
+    if (srcBitStride == 0)
+        return {};
+
     int srcMaxPixelCount = std::ceil((rawDataSize * 8) / srcBitStride);
     size_t dstSize = dstByteStride * srcMaxPixelCount;
     std::vector<uint8_t> formattedData(dstSize);

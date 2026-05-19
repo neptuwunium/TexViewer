@@ -107,19 +107,25 @@ ImageViewer::loadQImage()
 void
 ImageViewer::loadQImageCompressed()
 {
-    const ImageData& data = g_imageFormatData.at(m_format);
-    size_t rawDataSize = m_rawDataSize - m_rawDataOffset;
+    const ImageData& info = g_imageFormatData.at(m_format);
+    if (info.decode == nullptr)
+        return;
+
+    const size_t rawDataSize = m_rawDataSize - m_rawDataOffset;
     char* rawData = m_rawData + m_rawDataOffset;
 
-    int decompressedLen = getDecompressedSize(data.blockSizeSrc, data.pixelSizeDst, m_width, rawDataSize);
-    std::vector<char> decompressed(decompressedLen);
-    int height = convertBlocksSafe(rawData, rawDataSize, decompressed.data(), m_width, data.blockSizeSrc, data.pixelSizeDst, data.decode);
-    if (height == 0)
-        return;
+    int height = getDecompressedHeight(info, m_width, rawDataSize);
     if (height > m_height && m_height > 0)
         height = m_height;
-    QImage image((unsigned char*)decompressed.data(), m_width, height, data.qFormat);
-    QPixmap pixmap = QPixmap::fromImage(image);
+    const int decompressedLen = m_width * height * info.pitch;
+    std::vector<char> decompressed(decompressedLen);
+    int resultHeight = info.decode(rawData, rawDataSize, decompressed.data(), decompressedLen, m_width, m_height, info);
+    if (resultHeight == 0)
+        return;
+    if (resultHeight > height)
+        resultHeight = height;
+    const QImage image(reinterpret_cast<unsigned char *>(decompressed.data()), m_width, resultHeight, info.qFormat);
+    const QPixmap pixmap = QPixmap::fromImage(image);
     m_labelViewer->setPixmap(pixmap);
 }
 

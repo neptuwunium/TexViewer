@@ -4,3 +4,6 @@
 [submodule "lib/Binary-Reader"]
 	path = lib/Binary-Reader
 	url = https://github.com/Puxtril/Binary-Reader.git
+[submodule "lib/astc"]
+	path = lib/astc
+	url = https://github.com/ARM-software/astc-encoder
