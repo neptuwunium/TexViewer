@@ -1,6 +1,7 @@
 #include "ConverterBlockCompressed.h"
 
 #define BCDEC_IMPLEMENTATION
+#define BCDECDEF inline
 #define BCDEC_BC4BC5_PRECISE
 #define BCDEC_BC3_PRECISE
 #include "bcdec.h"

@@ -10,6 +10,7 @@ struct ImageData;
 #define MAKE_SPEC(name) void name(const void*, void*, int)
 
 #ifdef TEXVIEWER_BPTC
+#define BCDECDEF inline
 #define BCDEC_BC4BC5_PRECISE
 #define BCDEC_BC3_PRECISE
 #include "bcdec.h"
