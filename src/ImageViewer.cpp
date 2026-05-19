@@ -14,7 +14,7 @@ ImageViewer::~ImageViewer()
 void
 ImageViewer::setWidget(QScrollArea* imagePreviewLayout)
 {
-    m_labelViewer = new QLabel();
+    m_labelViewer = new ZoomableLabel(imagePreviewLayout);
     m_labelViewer->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
 
     m_scrollArea = imagePreviewLayout;
@@ -99,7 +99,7 @@ ImageViewer::loadQImage()
     catch (std::exception& ex)
     {
         QPixmap pixmap;
-        m_labelViewer->setPixmap(pixmap);
+        m_labelViewer->setOriginalPixmap(pixmap);
         emit errorMessage(ex.what());
     }
 }
@@ -128,7 +128,7 @@ ImageViewer::loadQImageCompressed()
         return;
     const QImage image(reinterpret_cast<unsigned char *>(decompressed.data()), m_width, resultHeight, info.qFormat);
     const QPixmap pixmap = QPixmap::fromImage(image);
-    m_labelViewer->setPixmap(pixmap);
+    m_labelViewer->setOriginalPixmap(pixmap);
 }
 
 void
@@ -145,5 +145,5 @@ ImageViewer::loadQImageUncompressed()
 
     QImage image((unsigned char*)formattedData.data(), m_width, height, QImage::Format_RGBA8888);
     QPixmap pixmap = QPixmap::fromImage(image);
-    m_labelViewer->setPixmap(pixmap);
+    m_labelViewer->setOriginalPixmap(pixmap);
 }

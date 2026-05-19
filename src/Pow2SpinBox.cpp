@@ -38,9 +38,15 @@ Pow2Spinbox::stepBy(int steps)
     index += steps;
     index = std::clamp(index, 0, 13);
 
+    if (index == 0)
+    {
+        setValue(minimum());
+        return;
+    }
+
     int value = 1 << (index + 1);
-    if (value < 4)
-        value = 4;
+    if (value < minimum())
+        value = minimum();
 
     setValue(value);
 }

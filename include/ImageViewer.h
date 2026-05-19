@@ -8,12 +8,13 @@
 #include "ConverterBlockCompressed.h"
 #include "ConverterUncompressed.h"
 #include "BinaryReaderSlice.h"
+#include "ZoomableLabel.h"
 
 class ImageViewer : public QObject
 {
     Q_OBJECT
 
-    QLabel* m_labelViewer;
+    ZoomableLabel* m_labelViewer;
     QScrollArea* m_scrollArea;
     bool m_isCompressed;
     

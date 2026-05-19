@@ -27,6 +27,7 @@ MainWindow::setupUi(QMainWindow* mainWindow)
     this->HeightInput->hide();
     this->YResolutionLayout->replaceWidget(this->HeightInput, newHeightSpinbox);
     this->HeightInput = newHeightSpinbox;
+    this->HeightInput->setSpecialValueText("Auto");
 
     connect(this->FormatOptionsGroup, &QTabWidget::currentChanged, this, &MainWindow::formatTabChanged);
     connect(this->actionOpen, &QAction::triggered, this, &MainWindow::fileOpenTriggered);
