@@ -34,7 +34,7 @@
         <property name="minimumSize">
          <size>
           <width>270</width>
-          <height>340</height>
+          <height>380</height>
          </size>
         </property>
         <property name="baseSize">
@@ -274,15 +274,18 @@
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>220</y>
+           <y>200</y>
            <width>241</width>
-           <height>111</height>
+           <height>151</height>
           </rect>
          </property>
          <property name="title">
           <string>Options</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
+          <property name="spacing">
+           <number>3</number>
+          </property>
           <item>
            <layout class="QHBoxLayout" name="OffsetLayout">
             <item>
@@ -317,7 +320,7 @@
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="ResolutionLayout">
+           <layout class="QHBoxLayout" name="XResolutionLayout">
             <item>
              <widget class="QLabel" name="WidthLabel">
               <property name="sizePolicy">
@@ -354,7 +357,59 @@
              </widget>
             </item>
             <item>
-             <spacer name="horizontalSpacer">
+             <spacer name="horizontalSpacer2">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="YResolutionLayout">
+            <item>
+             <widget class="QLabel" name="HeightLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>50</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Height</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="HeightInput">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>30</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer1">
               <property name="orientation">
                <enum>Qt::Orientation::Horizontal</enum>
               </property>

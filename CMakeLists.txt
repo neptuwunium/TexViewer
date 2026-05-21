@@ -13,6 +13,13 @@ elseif(UNIX)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -ggdb")
 endif()
 
+option(TEXVIEWER_ASTC "Enable ASTC Decompression" ON)
+option(TEXVIEWER_BPTC "Enable S3TC, RGTC and BPTC Decompression (BC1..7)" ON)
+option(TEXVIEWER_ETC "Enable ETC Decompression" ON)
+option(USE_SYSTEM_BCDEC "Use system bcdec instead of vendored" OFF)
+
+add_subdirectory(lib)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/Meta.h.in ${CMAKE_CURRENT_BINARY_DIR}/configured/Meta.h)
 
 file(GLOB TEX_VIEWER_SOURCES CONFIGURE_DEPENDS
@@ -20,14 +27,21 @@ file(GLOB TEX_VIEWER_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MainWindow.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ImageViewer.h
 )
+
+if (NOT TEXVIEWER_BPTC)
+    list(REMOVE_ITEM TEX_VIEWER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/ConverterBPTC.cpp)
+endif()
+
+if (NOT TEXVIEWER_ASTC)
+    list(REMOVE_ITEM TEX_VIEWER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/ConverterASTC.cpp)
+endif()
+
+if (NOT TEXVIEWER_ETC)
+    list(REMOVE_ITEM TEX_VIEWER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/ConverterETC.cpp)
+endif()
+
 set(GLOB TEX_VIEWER_SOURCES_UI CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/MainWindow.ui
-)
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_BINARY_DIR}/configured
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/bcdec
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/Binary-Reader/include
 )
 
 # Qt stuff
@@ -36,9 +50,22 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/ui)
 
 add_executable(TexViewer ${TEX_VIEWER_SOURCES} ${TEX_VIEWER_SOURCES_UI})
+target_include_directories(TexViewer PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}/configured
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/Binary-Reader/include
+)
+
+if (NOT USE_SYSTEM_BCDEC)
+    target_include_directories(TexViewer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib/bcdec)
+endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 target_link_libraries(TexViewer Qt6::Core Qt6::Gui Qt6::Widgets)
+
+if (TEXVIEWER_ASTC)
+    target_link_libraries(TexViewer ${ASTC_TARGET})
+endif()
 
 # Application will launch CMD window if this isn't set
 if (MSVC)

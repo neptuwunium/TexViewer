@@ -1,86 +1,52 @@
 #include "ConverterBlockCompressed.h"
 
-#define BCDEC_IMPLEMENTATION
-#include "bcdec.h"
-
-void
-bcdec_bc6hu(const void* compressedBlock, void* decompressedBlock, int destinationPitch)
+int
+getDecompressedHeight(const ImageData &info, const int width, const size_t dataSize)
 {
-    _bcdec_bc6h_as_RGBA(compressedBlock, decompressedBlock, destinationPitch / 4, false);
-}
-
-void
-bcdec_bc6hs(const void* compressedBlock, void* decompressedBlock, int destinationPitch)
-{
-    _bcdec_bc6h_as_RGBA(compressedBlock, decompressedBlock, destinationPitch / 4, true);
-}
-
-void
-_bcdec_bc6h_as_RGBA(const void* compressedBlock, void* decompressedBlock, int destinationPitch, bool isSigned)
-{
-    unsigned short block[16*3];
-    float* decompressed;
-    const unsigned short* b;
-    int i, j;
-
-    bcdec_bc6h_half(compressedBlock, block, 4*3, isSigned);
-    b = block;
-    decompressed = (float*)decompressedBlock;
-    for (i = 0; i < 4; ++i)
-    {
-        for (j = 0; j < 4; ++j)
-        {
-            // Previously: `j * 3`
-            // Currently : `j * 4`
-            decompressed[j * 4 + 0] = bcdec__half_to_float_quick(*b++);
-            decompressed[j * 4 + 1] = bcdec__half_to_float_quick(*b++);
-            decompressed[j * 4 + 2] = bcdec__half_to_float_quick(*b++);
-        }
-        decompressed += destinationPitch;
-    }
-}
-
-void bcdec_bc5_as_RGB(const void* compressedBlock, void* decompressedBlock, int destinationPitch)
-{
-    bcdec__smooth_alpha_block(compressedBlock, decompressedBlock, destinationPitch, 3);
-    bcdec__smooth_alpha_block(((char*)compressedBlock) + 8, ((char*)decompressedBlock) + 1, destinationPitch, 3);
+    const int blocksX = (width + info.blockWidth - 1) / info.blockWidth;
+    const int totalBlocks = static_cast<int>(dataSize) / info.blockSize;
+    const int blocksY = totalBlocks / blocksX;
+    return blocksY * info.blockHeight;
 }
 
 int
-getDecompressedSize(int srcBlockSize, int dstPixelSize, int width, int dataSize)
+convertBlocksSafe(char* inData, const size_t inDataLen, char* outData, const size_t outDataLen, const int width, const int, const ImageData &info)
 {
-    // Dealing with 4x4 blocks here, not pixels
-    int srcBlockRowByteSize = (width / 4) * srcBlockSize;
-    int srcBlockHeightMax = std::ceil(dataSize / (float)srcBlockRowByteSize);
-    int dstBlockByteSize = dstPixelSize * 16;
-    int dstBlockRowSize = ceil(width / 4.0F) * dstBlockByteSize;
-
-    return srcBlockHeightMax * dstBlockRowSize;
-}
-
-int
-convertBlocksSafe(const char* inData, size_t inDataLen, char* decompressed, int width, int srcBlockSize, int dstPixelSize, decodeFunc decodeFunc)
-{
-    if (inData == nullptr || decompressed == nullptr)
+    if (inData == nullptr || outData == nullptr)
         return 0;
 
-    const char* src = inData;
-    char* dst;
+    const decodeBlockFunc func = info.decodeBlock;
 
-    int i = 0;
+    if (func == nullptr)
+        return 0;
+
+    const int dstRowPitch = width * info.pitch;
+
+    const char* src = inData;
+
+    int y = 0;
     while (true)
     {
-        for (int j = 0; j < width; j+= 4)
+        for (int x = 0; x < width; x += info.blockWidth)
         {
-            if ((src + srcBlockSize - inData) >= inDataLen - 1)
-                goto ret;
-            dst = decompressed + (i * width + j) * dstPixelSize;
-            decodeFunc(src, dst, width * dstPixelSize);
-            src += srcBlockSize;
-        }
-        i += 4;
-    }
+            // input oob
+            if (src + info.blockSize - inData > static_cast<ptrdiff_t>(inDataLen))
+                return y;
 
-    ret:
-    return i;
+            // output oob
+            const size_t maxWriteOffset =
+                (y * width + x) * info.pitch +
+                (info.blockHeight - 1) * dstRowPitch +
+                info.blockWidth * info.pitch;
+
+            if (maxWriteOffset > outDataLen)
+                return y;
+
+            char *dst = outData + (y * width + x) * info.pitch;
+
+            func(src, dst, dstRowPitch);
+            src += info.blockSize;
+        }
+        y += info.blockHeight;
+    }
 }

@@ -14,8 +14,9 @@ ImageViewer::~ImageViewer()
 void
 ImageViewer::setWidget(QScrollArea* imagePreviewLayout)
 {
-    m_labelViewer = new QLabel();
-    
+    m_labelViewer = new ZoomableLabel(imagePreviewLayout);
+    m_labelViewer->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+
     m_scrollArea = imagePreviewLayout;
     m_scrollArea->setBackgroundRole(QPalette::Dark);
     m_scrollArea->setWidget(m_labelViewer);
@@ -51,6 +52,13 @@ ImageViewer::setWidth(int width)
         return;
     }
     m_width = width;
+    loadQImage();
+}
+
+void
+ImageViewer::setHeight(int height)
+{
+    m_height = height;
     loadQImage();
 }
 
@@ -91,7 +99,7 @@ ImageViewer::loadQImage()
     catch (std::exception& ex)
     {
         QPixmap pixmap;
-        m_labelViewer->setPixmap(pixmap);
+        m_labelViewer->setOriginalPixmap(pixmap);
         emit errorMessage(ex.what());
     }
 }
@@ -99,18 +107,28 @@ ImageViewer::loadQImage()
 void
 ImageViewer::loadQImageCompressed()
 {
-    const ImageData& data = g_imageFormatData.at(m_format);
-    size_t rawDataSize = m_rawDataSize - m_rawDataOffset;
+    const ImageData& info = g_imageFormatData.at(m_format);
+    if (info.decode == nullptr)
+        return;
+
+    const size_t rawDataSize = m_rawDataSize - m_rawDataOffset;
     char* rawData = m_rawData + m_rawDataOffset;
 
-    int decompressedLen = getDecompressedSize(data.blockSizeSrc, data.pixelSizeDst, m_width, rawDataSize);
+    int height = getDecompressedHeight(info, m_width, rawDataSize);
+    if (height > m_height && m_height > 0)
+        height = m_height;
+    const int decompressedLen = m_width * height * info.pitch;
     std::vector<char> decompressed(decompressedLen);
-    int height = convertBlocksSafe(rawData, rawDataSize, decompressed.data(), m_width, data.blockSizeSrc, data.pixelSizeDst, data.decode);
-    if (height == 0)
+    int resultHeight = info.decode(rawData, rawDataSize, decompressed.data(), decompressedLen, m_width, height, info);
+    if (resultHeight == 0)
         return;
-    QImage image((unsigned char*)decompressed.data(), m_width, height, data.qFormat);
-    QPixmap pixmap = QPixmap::fromImage(image);
-    m_labelViewer->setPixmap(pixmap);
+    if (resultHeight > height)
+        resultHeight = height;
+    if (resultHeight * m_width * info.pitch > decompressedLen)
+        return;
+    const QImage image(reinterpret_cast<unsigned char *>(decompressed.data()), m_width, resultHeight, info.qFormat);
+    const QPixmap pixmap = QPixmap::fromImage(image);
+    m_labelViewer->setOriginalPixmap(pixmap);
 }
 
 void
@@ -122,8 +140,10 @@ ImageViewer::loadQImageUncompressed()
         return;
 
     size_t height = formattedData.size() / 4 / m_width;
+    if (height > m_height && m_height > 0)
+        height = m_height;
 
     QImage image((unsigned char*)formattedData.data(), m_width, height, QImage::Format_RGBA8888);
     QPixmap pixmap = QPixmap::fromImage(image);
-    m_labelViewer->setPixmap(pixmap);
+    m_labelViewer->setOriginalPixmap(pixmap);
 }

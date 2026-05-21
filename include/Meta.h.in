@@ -11,3 +11,7 @@
 #else
     #define TEXVIEWER_VERSION_STR "@TexViewer_VERSION_MAJOR@.@TexViewer_VERSION_MINOR@"
 #endif
+
+#cmakedefine TEXVIEWER_ASTC
+#cmakedefine TEXVIEWER_BPTC
+#cmakedefine TEXVIEWER_ETC

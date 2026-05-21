@@ -1,5 +1,3 @@
-#include <bit>
-#include <QGuiApplication>
 #include "Pow2Spinbox.h"
 
 static int
@@ -17,15 +15,19 @@ nearestPowerOfTwo(int v)
 void
 Pow2Spinbox::stepBy(int steps)
 {
+    if (steps == 0) {
+        return;
+    }
+
     bool shiftHeld = QGuiApplication::keyboardModifiers() & Qt::ShiftModifier;
 
     int v = value();
 
     if (shiftHeld) {
-        const int stepShiftJump = minimum();
+        const int stepShiftJump = std::max(1, minimum());
         int value = v + steps * stepShiftJump;
-        if (value < stepShiftJump)
-            value = stepShiftJump;
+        if (value < minimum())
+            value = minimum();
         else if (stepShiftJump > 1)
             value -= value % stepShiftJump;
 
@@ -38,9 +40,15 @@ Pow2Spinbox::stepBy(int steps)
     index += steps;
     index = std::clamp(index, 0, 13);
 
+    if (index == 0)
+    {
+        setValue(minimum());
+        return;
+    }
+
     int value = 1 << (index + 1);
-    if (value < 4)
-        value = 4;
+    if (value < minimum())
+        value = minimum();
 
     setValue(value);
 }
