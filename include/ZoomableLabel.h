@@ -2,6 +2,7 @@
 
 #include <QLabel>
 #include <QPixmap>
+#include <QWheelEvent>
 
 class ZoomableLabel : public QLabel
 {

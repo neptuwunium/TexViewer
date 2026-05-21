@@ -1,7 +1,5 @@
 #include "ZoomableLabel.h"
 
-#include <QWheelEvent>
-
 ZoomableLabel::ZoomableLabel(QWidget *parent) : QLabel(parent), scaleFactor(1.0) {}
 
 void ZoomableLabel::reset()

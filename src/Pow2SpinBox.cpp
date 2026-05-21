@@ -1,5 +1,3 @@
-#include <bit>
-#include <QGuiApplication>
 #include "Pow2Spinbox.h"
 
 static int

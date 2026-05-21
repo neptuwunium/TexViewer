@@ -1,6 +1,8 @@
 #pragma once
 
-#include <QtWidgets/qspinbox.h>
+#include <QSpinBox>
+#include <bit>
+#include <QGuiApplication>
 
 class Pow2Spinbox : public QSpinBox
 {
